@@ -1,0 +1,116 @@
+CREATE TABLE usuarios(
+	id SERIAL PRIMARY KEY,
+	nombre VARCHAR(50) NOT NULL,
+	email VARCHAR(50) NOT NULL UNIQUE,
+	password VARCHAR(50) NOT NULL
+);
+
+
+drop table productos;
+
+CREATE TABLE productos(
+	id SERIAL PRIMARY KEY,
+	nombre VARCHAR(50) NOT NULL,
+	descripcion VARCHAR(50) NOT NULL,
+	stock INT not null default 0 check(stock >=0),
+	precio DECIMAL NOT NULL check(precio >=0),
+	categoria VARCHAR(50)
+);
+
+alter columm
+
+-- check(stock >=0),
+
+select * from productos;
+
+INSERT INTO productos(nombre, descripcion, stock, precio, categoria) VALUES('Pan', 'Marraqueta', 10, 1500, 'masas');
+INSERT INTO productos(nombre, descripcion, stock, precio, categoria) VALUES('Bebida 2 litros fanta', 'Fanta 2 litros', 10, 1800, 'Bebestibles');
+INSERT INTO productos(nombre, descripcion, stock, precio, categoria) VALUES('Arrollado huaso Emporio Aleman', 'Cecina con aji', 5, 15000, 'Fiambreria');
+INSERT INTO productos(nombre, descripcion, stock, precio, categoria) VALUES('Tomate granel', 'Tomate larga vida Quillon', 10, 1200, 'Verduras');
+INSERT INTO productos(nombre, descripcion, stock, precio, categoria) VALUES('Cerveza Austral', 'Calafate', 6, 1800, 'Bebestibles con alcohol');
+
+CREATE TABLE boletas(
+	numero_boleta INT PRIMARY KEY,
+	fecha DATE NOT NULL,
+	id_usuario INT NOT NULL,
+	FOREIGN KEY(id_usuario) REFERENCES usuarios(id)
+);
+
+
+CREATE TABLE detalles_boletas(
+	id SERIAL PRIMARY KEY,
+	numero_boleta INT NOT NULL,
+	id_producto INT NOT NULL,
+	cantidad INT NOT NULL,
+	precio DECIMAL NOT NULL check(precio >=0),
+	FOREIGN KEY(numero_boleta) REFERENCES boletas(numero_boleta),
+	FOREIGN KEY(id_producto) REFERENCES productos(id)
+);
+select * from detalles_boleta;
+
+CREATE TABLE carritos(
+	id SERIAL PRIMARY KEY,
+	id_usuario INT NOT NULL,
+	FOREIGN KEY(id_usuario) REFERENCES usuarios(id)
+);
+
+CREATE TABLE detalle_carritos(
+	id SERIAL PRIMARY KEY,
+	id_carrito INT NOT NULL,
+	id_producto INT NOT NULL,
+	FOREIGN KEY(id_carrito) REFERENCES carritos(id),
+	FOREIGN KEY(id_producto) REFERENCES productos(id)
+);
+select * from boleta;
+select * from detalle;
+-- INSERT USUARIOS:
+
+INSERT INTO usuarios(nombre, email, password) VALUES('Miguel', 'miguel@miguel.cl', '123456');
+INSERT INTO usuarios(nombre, email, password) VALUES('Gigi', 'gipp@si.cl', '123456');
+INSERT INTO usuarios(nombre, email, password) VALUES('Pedro', 'pedro@gmail.com', '123456');
+INSERT INTO usuarios(nombre, email, password) VALUES('Juan', 'juanito@gmail.com', '123456');
+INSERT INTO usuarios(nombre, email, password) VALUES('Facundo', 'facundo@gmail.com', '123456');
+
+
+select * from usuarios;
+select * from productos;
+
+
+
+--SIMULAR COMPRA 5 PRODUCTOS
+SELECT * FROM PRODUCTOS;
+BEGIN
+rollback;
+--CREAMOS BOLETA 10001
+INSERT INTO boletas(numero_boleta, fecha, id_usuario) VALUES (10001, '01/02/2023', 1);
+
+SELECT * FROM boletas;
+--AGREGAREMOS LOS SIGUIENTES PRODUCTOS AL DETALLE:
+-- ID: 1, CANTIDAD: 5, PRECIO: 1500 -> PAN
+-- ID: 2, CANTIDAD: 3, PRECIO: 1800 -> BEBIDA 2 LITROS FANTA
+INSERT INTO detalles_boletas(numero_boleta, id_producto, cantidad, precio) VALUES
+(10001, 1, 5, 1500),
+(10001, 2, 3, 1800);
+select * from detalles_boletas;
+--DESCONTAR STOCKS A LOS PRODUCTOS VENDIDOS
+UPDATE productos SET stock = stock -5 where id = 1;
+UPDATE productos SET stock = stock -3 where id = 2;
+select * from productos;
+COMMIT;
+
+--CONSULTA BOLETA 10001
+SELECT numero_boleta, nombre, (bd.cantidad * bd.precio) subtotal, ((bd.cantidad * bd.precio) * 1.19)  FROM detalles_boletas bd
+join productos p
+ON bd.id_producto = p.id;
+
+SELECT numero_boleta, SUM(((bd.cantidad * bd.precio) * 1.19))  FROM detalles_boletas bd
+join productos p
+ON bd.id_producto = p.id
+group by numero_boleta;
+
+SELECT * FROM boletas where fecha between '01/02/2023' AND '28/02/2023';
+
+SELECT * FROM DETALLES_BOLETAS;
+
+
+
